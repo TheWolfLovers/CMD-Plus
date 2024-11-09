@@ -1,0 +1,25 @@
+02
+Diary #1
+
+25/10/2024 | 5:41 PM
+Only recently did i find CMD+ again!
+And I am glad I still have this thing! It's a wonderful project
+Just imagine using it as a alternative for Command Prompt (wouldn't reccomeand)
+I even made an icon for it and everything!
+I may publish CMD+ to GameJolt at some point too :D
+I just wanna get a good amount of stuff working before I do publish it tho
+
+On an unrelated note I forgot that I made Diary #0 entirely like damn XD
+So I'm continueing the trend, and maybe even keeping these entires inside the installs of CMD+ people get
+speaking of installing I wanna know how to make an exe file essentially unzip CMD+ into different directories
+but for GameJolt ima keep it extracted (mainly so people can just run it from Library lol)
+
+By the way:
+
+ [/> = Text input (any string)
+ (/> = Number Input
+ {/> = Choice input (could be number or specific string)
+
+My codes for inputs :P
+
+- Simon

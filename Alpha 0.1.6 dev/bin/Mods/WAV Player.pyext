@@ -1,0 +1,56 @@
+#----[Code goes here]=----#
+# [MAKE SURE IT IS IN A FUNCTION
+
+
+def playSong(Song):
+	def play_wav(file):
+		if os.path.exists(file):
+	    		winsound.PlaySound(file, winsound.SND_FILENAME | winsound.SND_ASYNC)
+		else:
+			print(f"File not found: {file}")
+	play_wav("Mods\\Music\\" + Song + ".wav")
+def songs():
+	songList = []
+	if os.path.isdir("Mods\\Music"):
+		files = os.listdir("Mods\\Music")
+		for i in range(len(files)):
+			fileCheck = files[i]
+			if fileCheck.endswith(".wav"):
+				songList.append(fileCheck)
+		print("Song List\n(Found in Mods\\Music)")
+		for i in range(len(songList)):
+			displaySong = songList[i]
+			print("-", displaySong)
+		print("\nInput which song you want to play")
+		songPlay = input("{/> ")
+		def playSong(Song):
+			def play_wav(file):
+				if os.path.exists(file):
+	    				winsound.PlaySound(file, winsound.SND_FILENAME | winsound.SND_ASYNC)
+				else:
+					print(f"File not found: {file}")
+			play_wav("Mods\\Music\\" + Song + ".wav")
+
+		playSong(songPlay)
+
+def mp3Player(song):
+	playsound("Mods\\Music\\" + song + ".mp3")
+#-----[API shit]=-----#
+# [DO NOT REMOVE]
+# [Otherwise it won't register]
+
+ModCMD = {
+	"/play": playSong,	
+	"/songs": songs,
+	"/play-MP3": mp3Player
+} 
+
+# edit "ModCMD" in the format of "command: function name" (putting a slash for the command is reccomeanded)
+# Remember to put a comma for new line;
+# list = {
+# 	"command1": function1,
+# 	"command2": function2
+# }
+# otherwise it wont work.
+
+commands.update(ModCMD)
