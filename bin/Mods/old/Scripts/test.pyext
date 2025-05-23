@@ -1,0 +1,35 @@
+#----[Code goes here]=----#
+# [MAKE SURE IT IS IN A FUNCTION]
+def test():
+	# Writing JSON to a file
+	data = {
+		"name": "My Mod",
+		"description": "Description of the mod",
+		"allowed": True
+	}
+	with open('meta.json', 'w') as json_file:
+		json.dump(data, json_file, indent=4)
+
+	# Reading JSON from a file
+	with open('meta.json', 'r') as json_file:
+		loaded_data = json.load(json_file)
+		print(loaded_data)
+
+
+#-----[API shit]=-----#
+# [DO NOT REMOVE]
+# [Otherwise it won't register]
+
+ModCMD = {
+	"test": test
+} 
+
+# edit "ModCMD" in the format of "command: function name" (putting a slash for the command is reccomeanded)
+# Remember to put a comma for new line;
+# list = {
+# 	"command1": function1,
+# 	"command2": function2
+# }
+# otherwise it wont work.
+
+commands.update(ModCMD)

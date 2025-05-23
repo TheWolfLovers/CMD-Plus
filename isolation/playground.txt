@@ -1,0 +1,22 @@
+notif = notification
+from plyer import battery
+batt = battery.status
+battLv = batt.get("percentage")
+battChar = batt.get("isCharging")
+
+
+import os
+import platform
+
+def cls():
+    if platform.system() == 'Windows':
+        os.system('cls')
+    else:
+        os.system('clear')
+
+# Call the function to clear the terminal
+print("helloooooo!!!")
+input("Enter to continue")
+cls()
+print("How are ya?")
+input("Enter to murder")

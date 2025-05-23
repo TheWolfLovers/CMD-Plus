@@ -1,0 +1,436 @@
+#imports
+import random
+import os
+import sys
+import time
+import shutil
+import platform
+from plyer import email
+from plyer import notification
+from plyer import battery
+import winsound
+import tkinter as tk
+from tkinter import filedialog
+import playsound
+import subprocess
+########################################################
+#important variables
+mods = []
+Batt = battery.status['percentage']
+Charg = battery.status['isCharging']
+power = "ON"
+ver = "Alpha 0.1.4 revamped"
+Credentials = []
+OriginalWorkingFolder = os.getcwd()
+listedCommands = '''The following commands are:
+/write - allows you to write to 1-5 files any text you want
+/accountconfig - allows you to change username or password, or delete your account entirely (not files tho)
+
+/log - reads Log text files when specified with a number (goes in \'00\' digits)\n/wlog - similar to /log,
+however the \'w\' is short for \'write\',
+implying you write logs instead.
+(also done in double digits, i.e 01)
+
+And the following commands are admin controls:
+upadate - updates CMD+ using an upgrade.py file, this also backs up CMD+
+backup - backs up CMD+ into CMD+.BACKUP.py
+restore - will restore CMD+ from CMD+.BACKUP.py
+\n'''
+########################################################
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+# Settings
+requireSignIn = True
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+# Old ass code from Alpha 0.1.5
+def cls():
+    if platform.system() == 'Windows':
+        os.system('cls')
+    else:
+        os.system('clear')
+def load():
+    prin("[---")
+    stutter = random.randint(1,3)
+    time.sleep(stutter)
+    prin("----")
+    stutter = random.randint(1,3)
+    time.sleep(stutter)
+    prin("---")
+    stutter = random.randint(1,3)
+    time.sleep(stutter)
+    prin("--\\")
+    stutter = random.randint(1,3)
+    time.sleep(stutter)
+    print(" Done!!")
+    
+            
+def prin(text):
+    for char in text:
+        print(char,end='',flush=True)
+        time.sleep(0.05)
+
+def shutdown():
+    print("System shutting down...")
+    time.sleep(5)
+    sys.exit()
+
+def update():
+    print("updated! installing...")
+        
+    with open("CMD+.py", "r") as source:
+        content = source.read()
+    with open("CMD+.BACKUP.py", "w") as backup:
+        backup.write(content)
+        print(f"CMD+ is backing up the current version {ver} please wait")
+        load()
+        print(f"CMD+ version {ver} has been backed up, updating...")
+        load()
+        
+    with open("update.py", "r") as file6:
+        update = file6.read()
+        with open("CMD+.py", "w") as f:
+            f.write(update)
+            shutdown()
+        
+
+def backup():
+    with open("CMD+.py", "r") as source:
+        content = source.read()
+    with open("CMD+.BACKUP.py", "w") as backup:
+        backup.write(content)
+        print(f"CMD+ version {ver} backing up into CMD+.BACKUP.py... Please wait...")
+        load()
+
+def restore():
+    #open CMD+.BACKUP.py in read mode
+        #(file could be named anything, but in case of an emergency i made it a python so you can open and restore it :) )
+        with open("CMD+.BACKUP.py", "r") as restore:
+            #stores the code into a variable
+            code = restore.read()
+            #reads the file
+            print("Backup file found... reading...")
+            time.sleep(5)
+            #opens restore cache
+            with open("CMD+RestoreCache.json", "w") as cache:
+                #caches backup file
+                cache.write(code)
+                print("Backup file cached...")
+                time.sleep(2)
+                #reads cache
+                with open("CMD+RestoreCache.json", "r") as cacheR:
+                    code2 = cacheR.read()
+                    print("Reading cached backup...")
+                    #opens original program as "subject" (i prefer "target")
+                    with open("CMD+.py", "w") as subject:
+                        print("Replacing program with backup....")
+                        #starts writing the backup to the original code
+                        time.sleep(5)
+                        subject.write(code2)
+                        time.sleep(3)
+                        print("Done!")
+                        shutdown()
+            
+def CreateAccount():
+    Username = input("Enter the username you want:\n")
+    password = input("Enter your new password:\n")
+    with open("account.json", "w") as file2:
+        file2.write(Username + "," + password)
+    with open("CreatedAccount.json", "w") as file4:
+        file4.write("True")
+#sign in - look at account.json (text file) and save it as possible logins        
+def SignIn():
+    if requireSignIn == True:
+        with open("account.json", "r") as file3:
+            for line in file3:
+                Username, password = line.strip().split(",")
+                Credentials.append((Username, password))
+            #inputs
+            Username_Pass = input("What is your Username\n")
+            Password_Pass = input("What is your Password\n")
+            #if user input is same as files
+            if Username_Pass == Username and Password_Pass == password:
+                print("Correct password, signing in")
+                time.sleep(1)
+                cls()
+            else:
+                print("Incorrect password, shutting down")
+                shutdown()
+    elif requireSignIn == False:
+        with open("account.json", "r") as file3:
+            for line in file3:
+                Username, Password = line.strip().split(",")
+                Credentials.append(Username)
+'''
+def mods():
+    try:
+        with open(r"mods\\ModList.json", "r") as rawModList:
+            RmodList = rawModList.readline()
+            modList = RmodList.split(',')
+            for i in len(modList):
+                print(modList[i])
+    except FileNotFoundError:
+        prin("Sorry, Mod List file not found")
+        '''
+
+        
+def exit():
+    shutdown()
+
+        
+def accConfig():
+    action = input("Right, you are now configuring your account\n\nChange password = 1\nChange username = 2\nDelete account = 3\n(/> ")
+
+    if action == "1":
+        #first opens account.json
+        with open("account.json", "r") as file2:
+            
+            for line in file2:
+                Username, password = line.strip().split(",")
+                Credentials.append((Username, password))
+                #enter a new password
+            password = input("Enter your new Password:\n")
+            #replace old password with new
+            with open("account.json", "w") as FConfig:
+                FConfig.write(Username + "," + password)
+    #same as 1 but instead of password its the username
+    elif action == "2":
+        with open("account.json", "r") as file2:
+            for line in file2:
+                Username, password = line.strip().split(",")
+                Credentials.append((Username, password))
+                Username = input("Enter your new Username:\n")
+                with open("account.json", "w") as FConfig:
+                    FConfig.write(Username + "," + password)
+    #delete account
+    elif action == "3":
+        with open("account.json", "w") as file2:
+            file2.write("")
+        with open("CreatedAccount.json", "w") as file1:
+            file1.write("False")
+        if input("Account deleted\nDo you want to carry on using CMD+?\n(y/n)\n{/> ") == "y":
+            print("Ok")
+        else:
+            print("Oh... hope to see you again soon!")
+            time.sleep(3)
+            shutdown()
+    else:
+        print("Sorry, incorrect action")
+        time.sleep(2)
+def logReader():
+    prin("Log Reader 2.0")
+    print("\n\t[ Select a Log to read ]")
+    try:
+        FileList = []
+        LogsList = []
+        FileList = os.listdir("Logs\\")
+        for i in range(len(FileList)):
+            Files = FileList[i]
+            if Files.endswith(".txt") or FileList.endswith(".pydoc"):
+                LogsList.append(Files)
+
+        for i in range(len(LogsList)):
+            print("- " + LogsList[i])
+        logno = input("Which log do you want to read?\n(defined by its log number)\n{/> ")
+        try:
+            with open(f"Logs\\Log{logno}.txt", "r") as log:
+                lines = log.readlines()
+                if len(lines) >= 3:
+                    logno = lines[0].strip()
+                    logtitle = lines[1].strip()
+                    logdet = lines[3:]
+                    print("reading Log...\n")
+                    time.sleep(2)
+                    prin(f"Log: {logno} \n")
+                    prin(f"{logtitle}\n\n")
+                    prin(logdet)
+                    #read the logs you write :D
+                    input("\n\nonce you\'ve done reading you can press enter to exit")
+            #if file not found :/
+        except FileNotFoundError:
+            prin(f"\nThe Log {logno} you was looking for doesnt exist, check if it's the right number\n\n")
+    except Exception as e:
+        print(f"Oops... an error occured: {e}")
+def logWriter():
+    #write a log and call it whatever :D
+    logno = input("What number is your Log?\n(/> ")
+    logtitle = input("What's the title for this log?\n[/> ")
+    logdet = ''
+    print("Enter log description\n\ttype \':w\' to save and quit\n\n")
+    while True:
+        line = input(">")
+        if line == ':w':
+            break
+        else:
+            logdet += line + '\n'
+
+        
+    with open(f"Logs\\Log{logno}.txt", "w") as log:
+        log.writelines(logno + '\n' + logtitle + '\n\n' + logdet)
+        print(f"\n\nWriting Log {logno} titled {logtitle}...")
+        load()
+
+
+def write():
+    pass
+
+def help():
+    for i in commands.keys():
+        print(i)
+
+
+
+
+def say(arg):
+    print(arg)
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+# Generated with chatgpt
+def CMD():
+    current_dir = os.getcwd()
+    
+    while True:
+        command = input(f"{current_dir}> ").strip()
+        
+        if command.lower() in {"exit", "quit"}:
+            break
+        
+        if command.startswith("cd "):
+            try:
+                new_dir = command[3:].strip()
+                os.chdir(new_dir)
+                current_dir = os.getcwd()
+            except FileNotFoundError:
+                print(f"The directory {new_dir} does not exist.")
+            except Exception as e:
+                print(f"Error changing directory: {e}")
+        else:
+            try:
+                result = subprocess.run(command, shell=True, cwd=current_dir, capture_output=True, text=True)
+                if result.stdout:
+                    print(result.stdout)
+                if result.stderr:
+                    print(result.stderr)
+            except Exception as e:
+                print(f"Error executing command: {e}")
+
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+def modLoader():
+    rawFiles = os.listdir("Mods\\")
+    for i in range(len(rawFiles)):
+        fileCheck = rawFiles[i]
+        if fileCheck.endswith(".pyext"):
+            mods.append(fileCheck)
+            
+    for i in range(len(mods)):
+        with open(r"Mods\\" + mods[i], "r") as file:
+            code = file.read()
+            exec(code)
+    return code
+
+
+def openCMDPlusDir():
+    os.startfile(OriginalWorkingFolder)
+
+
+def Settings():
+    pass
+
+with open("Settings.txt", "r") as settings:
+    settingsLoad = settings.read()
+    exec(settingsLoad)
+
+
+
+
+
+
+
+
+
+
+
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+#check if account already exists, if not, create one, if yes, then sign in
+#i dont normally do comments but here i am!! - 18/03/2024
+with open("CreatedAccount.json", "r") as file1:
+    true = file1.read()
+    if true != "True":
+        print("CreatedAccount.json reads False, thus it's time to create an account\n\n")
+        CreateAccount()
+    else:
+        SignIn()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+
+user = Credentials[0][0]
+print("        Welcome back ^^")
+#while the power = ON keep asking for an input "action"
+
+
+# Main
+commands = {
+    "/help": help,
+    "help": help,
+    "/write": write,
+    "/accountconfig": accConfig,
+    "/log": logReader,
+    "/wlog": logWriter,
+    ">update": update,
+    ">restore": restore,
+    ">backup": backup,
+    "/say": say,
+    ">exit": exit,
+    "/cmd": CMD,
+    "/dir": openCMDPlusDir
+    }
+modLoader()
+print(f'''So {user}, what are you going to do?''')
+while power == "ON":
+    cmdIn = input("[/> ")
+    modLoader()
+    if cmdIn == "":
+        pass
+    else:
+        parts = cmdIn.split(maxsplit=1)
+        cmdExe = parts[0]
+        arg = parts[1:] if len(parts) > 1 else ''
+
+        if cmdExe in commands:
+            try:
+                commands[cmdExe](*arg)
+            except Exception as e:
+                print(e)
+        else:
+            print(f"\n{cmdExe} is not a valid command\nplease try again\n")

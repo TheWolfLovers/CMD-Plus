@@ -1,0 +1,129 @@
+def typer(text):
+	punctComma = [',', '/', '(', ')']
+	punctStop = ['.', '!', '?']
+	for t in text:
+		print(t, flush=True, end='')
+		if t in punctComma:
+			time.sleep(0.4)
+		elif t in punctStop:
+			time.sleep(0.7)
+		else:
+			time.sleep(0.02)
+	print()
+
+def play(cutscene):
+	def typer(text):
+		punctComma = [',', '/', '(', ')']
+		punctStop = ['.', '!', '?']
+		for t in text:
+			print(t, flush=True, end='')
+			if t in punctComma:
+				time.sleep(0.4)
+			elif t in punctStop:
+				time.sleep(0.7)
+			else:
+				time.sleep(0.05)
+		print()
+	import CMDPmodUtil
+	Util = CMDPmodUtil
+
+	modpath = Util.getModDir("Test")
+	with open(f"{modpath}\\Text\\Cutscenes\\{cutscene}.txt", "r") as raw:
+		cutscene = raw.read()
+		typer(cutscene)
+
+import random
+
+def play_game_risk():
+	lives = 3
+	rounds = 0
+	best_of_five = 5
+
+	while rounds < best_of_five:
+		print(f"Round {rounds + 1} of {best_of_five} - You have {lives} lives left.")
+		number = random.randint(1, 10)
+		guesses = 0
+
+		while guesses < 3:
+			print("Guess the number between 1 and 10:")
+			guess = input(f"{Credentials[0][0]} | {lives} -> ")
+
+			if not guess.isdigit():
+				print("Please enter a valid number.")
+				continue
+
+			guess = int(guess)
+			if guess == number:
+				print("Correct! Your lives are restored.")
+				lives = 3
+				break
+			elif guess < number:
+				print("Higher!")
+			else:
+				print("Lower!")
+
+			lives -= 1
+			guesses += 1
+
+			if lives == 0:
+				print("Game over! You've lost all your lives.")
+				shutdown()
+
+		if guesses < 3:
+			rounds += 1
+
+	if rounds == best_of_five:
+		print("You completed all five rounds! You're free to go!")
+		play("cutscene3")
+
+play("cutscene1")
+input('{/> ')
+play("cutscene2")
+play_game_risk()
+
+def play_game():
+	lives = 3
+	rounds = 0
+	best_of_five = 5
+
+	while rounds < best_of_five:
+		print(f"Round {rounds + 1} of {best_of_five} - You have {lives} lives left.")
+		number = random.randint(1, 10)
+		guesses = 0
+
+		while guesses < 3:
+			print("Guess the number between 1 and 10:")
+			guess = input(f"{Credentials[0][0]} | {lives} -> ")
+
+			if not guess.isdigit():
+				print("Please enter a valid number.")
+				continue
+
+			guess = int(guess)
+			if guess == number:
+				print("Correct! Your lives are restored.")
+				lives = 3
+				break
+			elif guess < number:
+				print("Higher!")
+			else:
+				print("Lower!")
+
+			lives -= 1
+			guesses += 1
+
+			if lives == 0:
+				print("Game over! You've lost all your lives.")
+				break
+
+		if guesses < 3:
+			rounds += 1
+
+	if rounds == best_of_five:
+		print("You completed all five rounds! You're free to go!\n\n")
+
+ModCMD = {
+	"/HoL": play_game
+}
+
+commands.update(ModCMD)
