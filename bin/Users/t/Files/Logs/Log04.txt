@@ -1,0 +1,14 @@
+04
+Windows VS Linux - Winsound VS VLC
+
+(I should improve the log writing at somepoint bruh)
+Anyway, 23/05/2025.
+
+I have added a native support for music!!!
+However, it uses VLC, and because I was running it on linux I didn't see a problem.
+But, when I transferred over to my pc (via github), I found out I couldn't even use VLC
+Stupid VLC LIB AAAAAAAAAA
+
+Anyway, to comprimise I've decided I'm just gonna use winsound if windows, and drop MP3 support. :/
+
+Sorry

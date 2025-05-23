@@ -17,7 +17,17 @@ from blessed import Terminal
 term = Terminal()
 import threading
 thr = threading.Thread
-import vlc
+
+plat = platform.system()
+if plat != "Windows":
+    from Other import vlc
+elif plat == "Windows":
+    from Windows import keyboard
+    keyboard.press("F11")
+    import winsound
+
+import zipfile
+zipl = zipfile.ZipFile
 ########################################################
 #important variables
 modScripts = []
@@ -26,7 +36,7 @@ rawModPacks = []
 enabledModPacks = []
 Batt = battery.status['percentage']
 Charg = battery.status['isCharging']
-ver = "Alpha 0.1.4 revamped"
+ver = "Alpha 0.2.0"
 Credentials = []
 power = "ON" # Shits tying the startup with duct tape bro.
 OriginalWorkingFolder = os.getcwd()
@@ -248,7 +258,7 @@ def accConfig():
 
         
 def logReader(): # Let's make everything json! Bookmark: JSONLOGS
-    prin("Log Reader 2.0")
+    print("Log Reader 2.0")
     print("\n\t[ Select a Log to read ]")
     try:
         FileList = []
@@ -256,54 +266,143 @@ def logReader(): # Let's make everything json! Bookmark: JSONLOGS
         FileList = os.listdir(f"Users/{userName}/Files/Logs/")
         for i in range(len(FileList)):
             Files = FileList[i]
-            if Files.endswith(".txt") or FileList.endswith(".pydoc"):
+            if Files.endswith(".pllog"):
                 LogsList.append(Files)
 
         for i in range(len(LogsList)):
             print("- " + LogsList[i])
         logno = input("Which log do you want to read?\n(defined by its log number)\n{/> ")
         try:
-            with open(f"Users/{userName}/Files/Logs/Log{logno}.txt", "r") as log:
-                lines = log.readlines()
-                if len(lines) >= 3:
-                    logno = lines[0].strip()
-                    logtitle = lines[1].strip()
-                    logdet = lines[3:]
-                    print("reading Log...\n")
-                    time.sleep(2)
-                    prin(f"Log: {logno} \n")
-                    prin(f"{logtitle}\n\n")
-                    prin(logdet)
-                    #read the logs you write :D
-                    input("\n\nonce you\'ve done reading you can press enter to exit")
-            #if file not found :/
+            with zipl(f"Users/{userName}/Files/Logs/Log{logno}.pllog", "r") as logzip:
+                rawdata = logzip.read("metadata.json").decode()
+                textcontent = logzip.read("text.txt").decode()
+                metadata = json.loads(rawdata)
+
+                prin(f"Reading Log {metadata['logNum']}\n\n...\n")
+                time.sleep(0.6)
+                print("#- File Start -#")
+                prin(f"Log: {metadata['logNum']}\n")
+                prin(f"Title: {metadata['logTitle']}\n\n")
+                prin(textcontent)
+                print("\n")
+                print("#- File End -#")
+                input("Press enter when you're done.")
         except FileNotFoundError:
-            prin(f"\nThe Log {logno} you was looking for doesnt exist, check if it's the right number\n\n")
+            print(f"\nThe Log {logno} you was looking for doesnt exist, check if it's the right number\n\n")
     except Exception as e:
         print(f"Oops... an error occured: {e}")
+
+def multin(inp = ''):
+    print("\n-=[ Log Editor ]=-\nEntering text editor. Press ESC or Ctrl+S to finish.")
+    input("Press Enter to start...")
+
+    lines = inp.split('\n') if inp != '' else ['']
+    x, y = 0, 0
+    scroll = 0
+    height = term.height - 2  # one line for title, one extra for buffer
+
+    with term.fullscreen(), term.cbreak():
+        while True:
+            # Draw title bar (white background, black text)
+            title_text = " CMD+ Log Writer (Alpha) - CTRL+S to save (or ESC) "
+            title = title_text.center(term.width)
+            print(term.home + term.on_white + term.black + title + term.normal)
+
+
+            # Clamp x and scroll
+            x = min(x, len(lines[y]))
+            if y < scroll:
+                scroll = y
+            elif y >= scroll + height:
+                scroll = y - height + 1
+
+            # Draw visible lines below title bar (start from row 1)
+            print(term.move(1, 0) + term.clear_eos, end='')
+            for i in range(scroll, min(scroll + height, len(lines))):
+                print(term.move(i - scroll + 1, 0) + lines[i])
+
+            # Move cursor (offset by 1 row for title)
+            print(term.move(y - scroll + 1, x), end='', flush=True)
+
+            key = term.inkey()
+
+            if not key:
+                continue
+
+            if key.name == 'KEY_ESCAPE' or key == '\x13':  # ESC or Ctrl+S
+                break
+            elif key.name == 'KEY_ENTER':
+                lines.insert(y + 1, lines[y][x:])
+                lines[y] = lines[y][:x]
+                y += 1
+                x = 0
+            elif key.name == 'KEY_BACKSPACE':
+                if x > 0:
+                    lines[y] = lines[y][:x - 1] + lines[y][x:]
+                    x -= 1
+                elif y > 0:
+                    x = len(lines[y - 1])
+                    lines[y - 1] += lines[y]
+                    del lines[y]
+                    y -= 1
+            elif key.name == 'KEY_UP':
+                if y > 0:
+                    y -= 1
+            elif key.name == 'KEY_DOWN':
+                if y < len(lines) - 1:
+                    y += 1
+            elif key.name == 'KEY_LEFT':
+                if x > 0:
+                    x -= 1
+                elif y > 0:
+                    y -= 1
+                    x = len(lines[y])
+            elif key.name == 'KEY_RIGHT':
+                if x < len(lines[y]):
+                    x += 1
+                elif y + 1 < len(lines):
+                    y += 1
+                    x = 0
+            elif key.is_sequence is False and key:
+                lines[y] = lines[y][:x] + key + lines[y][x:]
+                x += 1
+
+        print(term.normal, end='')
+    return '\n'.join(lines)
+
+response_type = {
+    "no": ["no","nope", "negative", "-", "nah"],
+    "yes": ["yes","yeah","yep","positive","+"]
+}
+
 def logWriter():
     #write a log and call it whatever :D
     logno = input("What number is your Log?\n(/> ")
     logtitle = input("What's the title for this log?\n[/> ")
-    logdet = ''
-    print("Enter log description\n\ttype \':w\' to save and quit\n\n")
-    while True:
-        line = input(">")
-        if line == ':w':
-            break
-        else:
-            logdet += line + '\n'
+    logdet = multin()
 
-    try:    
-        with open(f"Users/{userName}/Files/Logs/Log{logno}.txt", "w") as log:
-            log.writelines(logno + '\n' + logtitle + '\n\n' + logdet)
-            print(f"\n\nWriting Log {logno} titled {logtitle}...")
+    print("#- = -#\n\n\nYou wrote:\n")
+    print(logdet)
+    confirm = input("\n#-End of File-#\n\nAre you sure?\n{/>")
+    while confirm in response_type["no"]:
+        logdet = multin(logdet)
+        print("#- = -#\n\n\nYou wrote:\n")
+        print(logdet)
+        confirm = input("\n#-End of File-#\n\nAre you sure?\n{/>")
+
+    try:                
+        with zipl(f"Users/{userName}/Files/Logs/Log" + logno + ".pllog", "w") as logf:
+            metadata = json.dumps({'logNum': logno, 'logTitle': logtitle})
+            logf.writestr("metadata.json", metadata)
+            logf.writestr("text.txt", logdet)
             load()
     except FileNotFoundError:
         os.makedirs(f"Users/{userName}/Files/Logs/")
-        with open(f"Users/{userName}/Files/Logs/Log{logno}.txt", "w") as log:
-            log.writelines(logno + '\n' + logtitle + '\n\n' + logdet)
-            print(f"\n\nWriting Log {logno} titled {logtitle}...")
+            
+        with zipl(f"Users/{userName}/Files/Logs/Log" + logno + ".pllog", "w") as logf:
+            metadata = json.dumps({'logNum': logno, 'logTitle': logtitle})
+            logf.writestr("metadata.json", metadata)
+            logf.writestr("text.txt", logdet)    
             load()
 
 def write():
@@ -410,6 +509,8 @@ def loadScripts():
             with open(f"Mods/Scripts/{script}", 'r') as source:
                 code = source.read()
                 exec(code)
+    else:
+        baseScripts = []
 
     modpackScripts = []
     for mod in enabledModPacks:
@@ -427,6 +528,7 @@ def loadScripts():
 
     # Merge base and modpack scripts
     allScripts = baseScripts + modpackScripts
+        
     print(f"Loaded {len(allScripts)} {'script' if len(allScripts) == 1 else 'scripts'}")
     global modScripts
     modScripts = allScripts
@@ -510,19 +612,27 @@ SignIn()
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # Functions (Commands)
 def PlayMusic(song):
-    path = os.path.abspath(f"./Mods/Music/{song}")
-    player = vlc.MediaPlayer(f"file://{path}")
-    player.play()
+    if plat != "Windows":
+        path = os.path.abspath(f"./Mods/Music/{song}")
+        player = vlc.MediaPlayer(f"file://{path}")
+        player.play()
+    elif plat == "Windows":
+        path = os.path.abspath(f"./Mods/Music/{song}")
+        winsound.PlaySound(path, winsound.SND_FILENAME | winsound.SND_ASYNC)
 
-def MusicMenu(arg=""):
+def MusicMenu(arg=""): #arg needs to be a number
     if arg == "":
         songList = []
-        if os.path.isdir("Mods/Music"):
-            files = os.listdir("Mods/Music")
-            for i in range(len(files)):
+        if os.path.isdir("Mods/Music"): # Checks if the folder Mods/Music exists.
+            files = os.listdir("Mods/Music") # Lists all the files inside.
+            for i in range(len(files)): 
                 fileCheck = files[i]
-                if fileCheck.endswith(".wav") or fileCheck.endswith(".mp3"):
-                    songList.append(fileCheck)
+                if plat != "Windows": # Winsound vs VLC bullshit
+                    if fileCheck.endswith(".wav") or fileCheck.endswith(".mp3"): # Finds mp3 as well if it isn't windows
+                        songList.append(fileCheck)
+                else:
+                    if fileCheck.endswith(".wav"): # Only finds .wav files for windows.
+                         songList.append(fileCheck)
             print("Song List\n(Found in Mods/Music)")
             for i in range(len(songList)):
                 displaySong = songList[i]
@@ -533,6 +643,22 @@ def MusicMenu(arg=""):
             print("Now playing: ", songChosen)
             MusicThread = thr(target=PlayMusic, args=(songChosen,))
             MusicThread.start()
+    elif int(arg):
+        songList = []
+        if os.path.isdir("Mods/Music"): # Checks if the folder Mods/Music exists.
+            files = os.listdir("Mods/Music") # Lists all the files inside.
+            for i in range(len(files)): 
+                fileCheck = files[i]
+                if plat != "Windows": # Winsound vs VLC bullshit
+                    if fileCheck.endswith(".wav") or fileCheck.endswith(".mp3"):
+                        songList.append(fileCheck)
+                else:
+                    if fileCheck.endswith(".wav"):
+                         songList.append(fileCheck)
+        songChosen = songList[int(arg) - 1]
+        print("Now playing: ", songChosen)
+        MusicThread = thr(target=PlayMusic, args=(songChosen,))
+        MusicThread.start()
             
             
 
