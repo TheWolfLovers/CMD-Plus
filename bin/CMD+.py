@@ -20,7 +20,7 @@ thr = threading.Thread
 
 plat = platform.system()
 if plat != "Windows":
-    from Other import vlc
+    import vlc
 elif plat == "Windows":
     from Windows import keyboard
     keyboard.press("F11")
